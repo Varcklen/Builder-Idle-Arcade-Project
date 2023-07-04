@@ -1,7 +1,8 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// Невеличкий скрiпт для перемiщення камери за гравцем
+/// </summary>
 public class CameraMovement : MonoBehaviour
 {
     [SerializeField] private Transform _target;

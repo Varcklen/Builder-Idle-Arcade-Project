@@ -1,67 +1,43 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
+/// <summary>
+/// Iнвентар гравц€.
+/// </summary>
 public class PlayerBag : MonoBehaviour
 {
     [SerializeField] private Transform _bagTransform;
-    [SerializeField] private GameObject BagResourcePrefab;
+    [SerializeField] private GameObject ResourceProjectilePrefab;
     [SerializeField] private float _rangeBetweenItems = 1f;
     [SerializeField] private int _limitOfVisibleItems = 10;
-    [SerializeField] private bool _accessToPickupDifferentItems;
+    [SerializeField] private bool _canPickupDifferentItems;
 
     private readonly List<ResourceProjectile> _bagSlots = new ();
-    private readonly List<ResourceAmount> _resourceAmountList = new ();
 
     private ResourceSO _mainVisibleResource;
 
-    private class ResourceAmount
-    {
-        public ResourceSO Resource;
-        public int amount;
-    }
-
     public void AddResource(ResourceObject resourceObject, out bool successfull)
     {
-        //Debug.Log($"_mainVisibleResource: {_mainVisibleResource?.Name}");
         if (_mainVisibleResource == null)
         {
             _mainVisibleResource = resourceObject.Resource;
         }
-        if (_mainVisibleResource != resourceObject.Resource && _accessToPickupDifferentItems == false)
+        if (_mainVisibleResource != resourceObject.Resource && _canPickupDifferentItems == false)
         {
             successfull = false;
             return;
         }
 
         ResourceSO resource = resourceObject.Resource;
-        ResourceAmount resourceAmount = _resourceAmountList.Find(x => x.Resource == resource);
-        if (resourceAmount == null)
-        {
-            
-            _resourceAmountList.Add(new ResourceAmount() { 
-                Resource = resource, 
-                amount = 1
-            });
-        }
-        else
-        {
-            resourceAmount.amount++;
-        }
-
         ResourceProjectile bagResource;
-        Vector3 newPosition;
         int itemsWithMainResource = GetRecourseAmount(_mainVisibleResource);
         if (itemsWithMainResource < _limitOfVisibleItems && resource == _mainVisibleResource)
         {
-            bagResource = Instantiate(BagResourcePrefab, resourceObject.transform.position, Quaternion.identity).GetComponent<ResourceProjectile>();
-            //Debug.Log($"bagResource: {bagResource}");
-            //Debug.Log($"resourceObject: {resourceObject}");
+            bagResource = Instantiate(ResourceProjectilePrefab, resourceObject.transform.position, Quaternion.identity).GetComponent<ResourceProjectile>();
             bagResource.Resource = resource;
-            newPosition = _bagTransform.position + new Vector3(0, itemsWithMainResource * _rangeBetweenItems, 0);
-            bagResource.MoveToPosition(newPosition, () =>
+            Vector3 newPosition = _bagTransform.position + new Vector3(0, itemsWithMainResource * _rangeBetweenItems, 0);
+            bagResource.MoveToPosition(newPosition, actionAfterMove:() =>
             {
                 if (bagResource.IsMoveInterrupted == false)
                 {
@@ -72,8 +48,7 @@ public class PlayerBag : MonoBehaviour
         }
         else
         {
-            bagResource = Instantiate(BagResourcePrefab, _bagTransform.position, Quaternion.identity).GetComponent<ResourceProjectile>();
-            newPosition = bagResource.transform.position;
+            bagResource = Instantiate(ResourceProjectilePrefab, _bagTransform.position, Quaternion.identity).GetComponent<ResourceProjectile>();
             bagResource.Resource = resource;
             SetParent(bagResource);
             bagResource.gameObject.SetActive(false);
@@ -83,39 +58,23 @@ public class PlayerBag : MonoBehaviour
         successfull = true;
     }
 
-    public void RemoveResource(ResourceSO resource, Vector3 moveTo, out List<ResourceProjectile> bagResources, int amount = 1, bool destroyAtEnd = false )
+    public void RemoveResource(ResourceSO resource, Vector3 moveTo, out List<ResourceProjectile> resourceList, int amount = 1, bool destroyAtEnd = false )
     {
-        bagResources = new List<ResourceProjectile>();
-        ResourceAmount resourceAmount = _resourceAmountList.Find(x => x.Resource == resource);
-        if (resourceAmount == null) return;
-
-        amount = Mathf.Min(amount, resourceAmount.amount);
-        resourceAmount.amount -= amount;
-
-        ResourceProjectile bagResource;
+        resourceList = new List<ResourceProjectile>();
+        amount = Mathf.Min(amount, GetRecourseAmount(resource));
+        ResourceProjectile resourceProjectile;
         for (int i = 0; i < amount; i++)
         {
-            bagResource = _bagSlots.Find(x => x.Resource == resource);
-            if (bagResource == null)
+            resourceProjectile = _bagSlots.Find(x => x.Resource == resource);
+            if (resourceProjectile == null)
             {
                 break;
             }
-            bagResources.Add(bagResource);
-            bagResource.ResetResource();
-            //bagResource.transform.position = moveTo;
-            if (destroyAtEnd)
-            {
-                bagResource.MoveToPosition(moveTo, () =>
-                {
-                    if (bagResource != null) Destroy(bagResource.gameObject);
-                });
-            }
-            else
-            {
-                bagResource.MoveToPosition(moveTo);
-            }
-            
-            _bagSlots.Remove(bagResource); 
+            resourceList.Add(resourceProjectile);
+            resourceProjectile.ResetMovement();
+
+            resourceProjectile.MoveToPosition(moveTo, destroyAtEnd);
+            _bagSlots.Remove(resourceProjectile); 
         }
         if (GetRecourseAmount(_mainVisibleResource) <= 0)
         {
@@ -127,7 +86,6 @@ public class PlayerBag : MonoBehaviour
     {
         bagResource.transform.parent = _bagTransform;
         bagResource.transform.position = new Vector3(_bagTransform.transform.position.x, bagResource.transform.position.y, _bagTransform.transform.position.z);
-        bagResource.transform.rotation = Quaternion.Euler(0, 180, 0);
     }
 
     public int GetRecourseAmount(ResourceSO resource)

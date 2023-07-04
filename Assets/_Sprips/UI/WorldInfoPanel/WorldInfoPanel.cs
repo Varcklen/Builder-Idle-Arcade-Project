@@ -2,6 +2,9 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
+/// <summary>
+/// UI-елемент, який відображає кiлькiсть ресурсiв у вибраному мiсцi
+/// </summary>
 public class WorldInfoPanel : MonoBehaviour
 {
     [SerializeField] private GameObject _child;
@@ -26,14 +29,12 @@ public class WorldInfoPanel : MonoBehaviour
     private void OnTriggerEnter(Collider collider)
     {
         if (collider.tag != "Player" || _child.activeSelf) return;
-        //Debug.Log($"Enter: {this} Collide with: {collider}");
         _child.SetActive(true);
     }
 
     private void OnTriggerExit(Collider collider)
     {
         if (collider.tag != "Player" || _child.activeSelf == false) return;
-        //Debug.Log($"Exit {this} Collide with: {collider}");
         _child.SetActive(false);
     }
 }

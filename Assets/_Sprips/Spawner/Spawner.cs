@@ -1,19 +1,21 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// Скрипт дає можливiсть створювати ResourceObject, якi можуть бути пiдiбранi гравцем
+/// </summary>
 public class Spawner : MonoBehaviour
 {
     [SerializeField] private GameObject _resourceObjectPrefab;
     //[SerializeField] private ResourceSO _resourceType;
     [SerializeField, Min(1)] private float _maxSpawnRange;
     [SerializeField, Min(0.1f)] private float _spawnCooldown;
-    [SerializeField] private bool _spawnAfterCreating;
+    [SerializeField] private bool _spawnOnStart;
 
     private void Start()
     {
         StartCoroutine(SpawnCooldown());
-        if (_spawnAfterCreating)
+        if (_spawnOnStart)
         {
             Spawn();
         }

@@ -1,10 +1,11 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// Мiсце для відвантаження ресурсiв
+/// </summary>
 public class Stockpile : Loader
 {
-    [SerializeField] private Transform _placeToPutItemTransform;
+    [SerializeField] private Transform _placeToMoveItem;
     [SerializeField] private WorldInfoPanel _infoPanel;
 
     private int _itemsInStock;
@@ -12,18 +13,14 @@ public class Stockpile : Loader
     private void Start()
     {
         SetStockAmount(_itemsInStock);
-        _infoPanel.SetImage(ResourceRequired.Sprite);
+        _infoPanel.SetImage(_resourceRequired.Sprite);
     }
 
     public override void LoadResources(PlayerBag playerBag)
     {
-        int resourceAmountToLoad = playerBag.GetRecourseAmount(ResourceRequired);
+        int resourceAmountToLoad = playerBag.GetRecourseAmount(_resourceRequired);
 
-        if (resourceAmountToLoad == 0)
-        {
-            return;
-        }
-        playerBag.RemoveResource(ResourceRequired, _placeToPutItemTransform.position, out _, resourceAmountToLoad, true);
+        playerBag.RemoveResource(_resourceRequired, _placeToMoveItem.position, out _, resourceAmountToLoad, destroyAtEnd:true);
 
         AddStockAmount(resourceAmountToLoad);
     }

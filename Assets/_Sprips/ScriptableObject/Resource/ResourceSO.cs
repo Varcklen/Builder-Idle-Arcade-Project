@@ -1,7 +1,8 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// Шаблон даних для ресурсу
+/// </summary>
 [CreateAssetMenu(fileName = "New Resource", menuName = "Custom/Resource")]
 public class ResourceSO : ScriptableObject
 {

@@ -1,12 +1,11 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
-public class ResourceObject : MonoBehaviour
+/// <summary>
+/// Ресурс, який лежить на землi i може бути пiдiбраний гравцем
+/// </summary>
+public class ResourceObject : ResourceMover
 {
-    public ResourceSO Resource;
-
     private bool _triggered;
 
     public event Action<ResourceObject> OnPickup;
@@ -17,6 +16,8 @@ public class ResourceObject : MonoBehaviour
         var playerBag = collider.GetComponent<PlayerBag>();
         playerBag.AddResource(this, out bool successfull);
         if (successfull == false) return;
+
+        ResetMovement();
         _triggered = true;
         OnPickup?.Invoke(this);
         Destroy(gameObject);

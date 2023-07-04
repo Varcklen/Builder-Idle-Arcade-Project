@@ -1,7 +1,8 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// Простий скрипт для перемiщення аватари гравця
+/// </summary>
 [RequireComponent(typeof(Rigidbody), typeof(BoxCollider))]
 public class PlayerController : MonoBehaviour
 {

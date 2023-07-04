@@ -2,46 +2,35 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// Тут проходе процесс переробки металу в мечi. Скрипт зв`язан з Loader и Uploader скриптами
+/// </summary>
 public class Factory : Loader
 {
-    [SerializeField] private ResourceSO _resourceToCreate;
-    [SerializeField] private Transform _loadTransform;
-    [SerializeField] private Transform _uploadTransform;
+
     [SerializeField] private Transform _startProcessTransform;
     [SerializeField] private Transform _endProcessTransform;
     [SerializeField] private Transform _objectBuferTransform;
 
     [SerializeField] private WorldInfoPanel _infoPanelStart;
-    [SerializeField] private WorldInfoPanel _infoPanelEnd;
 
-    [SerializeField] private GameObject _recourceObjectPrefab;
+    [SerializeField] private Uploader _uploader;
 
     [SerializeField, Min(0.1f)] private float _processTime;
-    [SerializeField, Min(1)] private float _loadRange;
 
     private readonly List<ResourceProjectile> _itemsInBufer = new ();
-    private readonly List<ResourceObject> _itemsProduced = new ();
 
     private bool _inProcess;
 
     private void Start()
     {
-        _infoPanelStart.SetImage(ResourceRequired.Sprite);
+        _infoPanelStart.SetImage(_resourceRequired.Sprite);
         _infoPanelStart.SetValue(_itemsInBufer.Count);
-
-        _infoPanelEnd.SetImage(_resourceToCreate.Sprite);
-        _infoPanelEnd.SetValue(_itemsProduced.Count);
     }
 
     public override void LoadResources(PlayerBag playerBag)
     {
-        int resourceAmountToLoad = playerBag.GetRecourseAmount(ResourceRequired);
-
-        if (resourceAmountToLoad == 0)
-        {
-            return;
-        }
-        playerBag.RemoveResource(ResourceRequired, _objectBuferTransform.position, out List<ResourceProjectile> bagResource, resourceAmountToLoad);
+        playerBag.RemoveResource(_resourceRequired, _objectBuferTransform.position, out List<ResourceProjectile> bagResource, playerBag.GetRecourseAmount(_resourceRequired));
         _itemsInBufer.AddRange(bagResource);
         _infoPanelStart.SetValue(_itemsInBufer.Count);
         if (_inProcess == false)
@@ -58,21 +47,20 @@ public class Factory : Loader
         while (_inProcess)
         {
             itemInProcess = _itemsInBufer[0];
-            itemInProcess.ResetResource();
+            itemInProcess.ResetMovement();
             StartCoroutine(Move(itemInProcess));
             yield return cooldown;
             _itemsInBufer.Remove(itemInProcess);
             _infoPanelStart.SetValue(_itemsInBufer.Count);
             Destroy(itemInProcess.gameObject);
-            CreateResource();
+            _uploader.CreateResource();
             _inProcess = _itemsInBufer.Count > 0;
         }
     }
 
     private IEnumerator Move(ResourceProjectile itemInProcess)
     {
-        Transform itemTransform;
-        itemTransform = itemInProcess.transform;
+        Transform itemTransform = itemInProcess.transform;
         itemTransform.position = _startProcessTransform.position;
 
         var speed = Vector3.Distance(_endProcessTransform.position, _startProcessTransform.position) / _processTime;
@@ -83,21 +71,5 @@ public class Factory : Loader
             itemTransform.position = Vector3.MoveTowards(itemTransform.position, _endProcessTransform.position, Time.deltaTime * speed);
             time += Time.deltaTime;
         }
-    }
-
-    private void CreateResource()
-    {
-        ResourceObject resourceObject = Instantiate(_recourceObjectPrefab, _uploadTransform.position, Quaternion.identity).GetComponent<ResourceObject>();
-        resourceObject.Resource = _resourceToCreate;
-        _itemsProduced.Add(resourceObject);
-        _infoPanelEnd.SetValue(_itemsProduced.Count);
-        resourceObject.OnPickup += OnPickup;
-    }
-
-    private void OnPickup(ResourceObject resourceObject)
-    {
-        _itemsProduced.Remove(resourceObject);
-        _infoPanelEnd.SetValue(_itemsProduced.Count);
-        resourceObject.OnPickup -= OnPickup;
     }
 }

@@ -751,10 +751,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: Player
       objectReference: {fileID: 0}
-    - target: {fileID: 7890258178674126283, guid: 91b3a3d60b87c304e9ecae60db88a0a9, type: 3}
-      propertyPath: _accessToPickupDifferentItems
-      value: 1
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 91b3a3d60b87c304e9ecae60db88a0a9, type: 3}
 --- !u!224 &2109502907 stripped
@@ -898,10 +894,6 @@ PrefabInstance:
       propertyPath: _resourceType
       value: 
       objectReference: {fileID: 11400000, guid: 56fd027235e441644ba6caccffcfe0d9, type: 2}
-    - target: {fileID: 4638432094005126064, guid: ccb278d6d15e71f498ff909867136d91, type: 3}
-      propertyPath: _resourceObjectPrefab
-      value: 
-      objectReference: {fileID: 4772688161126121192, guid: 976b29d86c8b4a940a47dab6d119f481, type: 3}
     - target: {fileID: 7279115858458757205, guid: ccb278d6d15e71f498ff909867136d91, type: 3}
       propertyPath: m_Name
       value: Spawner
